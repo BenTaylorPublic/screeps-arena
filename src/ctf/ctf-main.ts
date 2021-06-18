@@ -84,8 +84,8 @@ export class CtfMain {
             }
         }
 
-        const CAPTAIN_PATH_STEPS_DEFENSE: number = 4;
-        const RANGED_PATH_STEPS_DEFENSE: number = 2;
+        const CAPTAIN_PATH_STEPS_DEFENSE: number = 2;
+        const RANGED_PATH_STEPS_DEFENSE: number = 1;
         const HEALER_PATH_STEPS_DEFENSE: number = 0;
 
         const pathFromFlags: PathStep[] = findPath(captain.creep, this.enemyFlag);

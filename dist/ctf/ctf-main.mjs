@@ -66,8 +66,8 @@ class CtfMain {
                 this.enemyFlag = flag;
             }
         }
-        const CAPTAIN_PATH_STEPS_DEFENSE = 4;
-        const RANGED_PATH_STEPS_DEFENSE = 2;
+        const CAPTAIN_PATH_STEPS_DEFENSE = 2;
+        const RANGED_PATH_STEPS_DEFENSE = 1;
         const HEALER_PATH_STEPS_DEFENSE = 0;
         const pathFromFlags = findPath(captain.creep, this.enemyFlag);
         this.defensivePosCaptain = pathFromFlags[CAPTAIN_PATH_STEPS_DEFENSE];
