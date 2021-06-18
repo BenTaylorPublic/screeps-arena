@@ -64,7 +64,7 @@ class CtfMain {
             }
         }
         this.enemyCreeps.sort((a, b) => {
-            return a.deathPriority - b.deathPriority;
+            return b.deathPriority - a.deathPriority;
         });
         console.log(JSON.stringify(this.enemyCreeps[0].creep.body[0]));
         if (captain == null) {
