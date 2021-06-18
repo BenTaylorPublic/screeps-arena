@@ -16,6 +16,7 @@ class CtfMain {
         this.enemyCreeps = [];
         this.matchState = "defense";
         const creeps = getObjectsByPrototype(Creep);
+        let captain = null;
         for (const creep of creeps) {
             if (creep.my) {
                 const myCreep = {
@@ -26,7 +27,13 @@ class CtfMain {
                     myCreep.type = "healer";
                 }
                 else if (creep.body[0].type === TOUGH) {
-                    myCreep.type = "tank";
+                    if (!captain) {
+                        myCreep.type = "captain";
+                        captain = myCreep;
+                    }
+                    else {
+                        myCreep.type = "tank";
+                    }
                 }
                 else if (creep.body[0].type === RANGED_ATTACK) {
                     myCreep.type = "ranger";
@@ -39,6 +46,10 @@ class CtfMain {
             else {
                 this.enemyCreeps.push(creep);
             }
+        }
+        if (captain == null) {
+            console.log("ERROR: No captain found");
+            return;
         }
         const towers = getObjectsByPrototype(StructureTower);
         for (const tower of towers) {
@@ -55,23 +66,29 @@ class CtfMain {
                 this.enemyFlag = flag;
             }
         }
-        const RANGED_PATH_STEPS_DEFENSE = 8;
-        const HEALER_PATH_STEPS_DEFENSE = 6;
-        const pathFromFlags = findPath(this.myFlag, this.enemyFlag);
-        this.defensivePosHealers = pathFromFlags[HEALER_PATH_STEPS_DEFENSE];
+        const CAPTAIN_PATH_STEPS_DEFENSE = 4;
+        const RANGED_PATH_STEPS_DEFENSE = 2;
+        const HEALER_PATH_STEPS_DEFENSE = 0;
+        const pathFromFlags = findPath(captain.creep, this.enemyFlag);
+        this.defensivePosCaptain = pathFromFlags[CAPTAIN_PATH_STEPS_DEFENSE];
         this.defensivePosRanged = pathFromFlags[RANGED_PATH_STEPS_DEFENSE];
+        this.defensivePosHealers = pathFromFlags[HEALER_PATH_STEPS_DEFENSE];
+        console.log(JSON.stringify(this.defensivePosCaptain));
         console.log(JSON.stringify(this.defensivePosHealers));
         console.log(JSON.stringify(this.defensivePosRanged));
     }
     static runMyCreep(myCreep) {
-        if (myCreep.type === "tank") {
-            this.runTank(myCreep);
-        }
-        else if (myCreep.type === "ranger") {
+        if (myCreep.type === "ranger") {
             this.runRanger(myCreep);
         }
         else if (myCreep.type === "healer") {
             this.runHealer(myCreep);
+        }
+        else if (myCreep.type === "tank") {
+            this.runTank(myCreep);
+        }
+        else if (myCreep.type === "captain") {
+            this.runCaptain(myCreep);
         }
     }
     static runTank(tank) {
@@ -79,6 +96,22 @@ class CtfMain {
         let attackResult = null;
         for (const enemyCreep of this.enemyCreeps) {
             attackResult = tank.creep.attack(enemyCreep);
+            if (attackResult === OK) {
+                break;
+            }
+        }
+    }
+    static runCaptain(captain) {
+        // Movement logic
+        if (this.matchState === "defense") {
+            captain.creep.moveTo(this.defensivePosCaptain);
+        }
+        else {
+            captain.creep.moveTo(this.enemyFlag);
+        }
+        let attackResult = null;
+        for (const enemyCreep of this.enemyCreeps) {
+            attackResult = captain.creep.attack(enemyCreep);
             if (attackResult === OK) {
                 break;
             }
