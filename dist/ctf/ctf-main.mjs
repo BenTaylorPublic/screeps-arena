@@ -237,6 +237,7 @@ class CtfMain {
             if (getTime() > 1700) {
                 console.log("push");
                 this.matchState = "push";
+                console.log(this.enemyCreeps.length);
             }
         }
     }
