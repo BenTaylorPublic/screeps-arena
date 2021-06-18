@@ -7,6 +7,7 @@ function loop() {
         if (firstTick) {
             CtfMain.initialize();
         }
+        CtfMain.run();
     }
     firstTick = false;
 }
