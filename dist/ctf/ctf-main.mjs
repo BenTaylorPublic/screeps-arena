@@ -4,13 +4,6 @@ import { HEAL, RANGED_ATTACK, TOUGH, OK } from '/game/constants';
 import { Flag } from '/arena/prototypes';
 
 class CtfMain {
-    static run() {
-        this.progressStates();
-        for (const myCreep of this.myCreeps) {
-            this.runMyCreep(myCreep);
-        }
-        this.runTower();
-    }
     static initialize() {
         this.myCreeps = [];
         this.enemyCreeps = [];
@@ -66,7 +59,6 @@ class CtfMain {
         this.enemyCreeps.sort((a, b) => {
             return b.deathPriority - a.deathPriority;
         });
-        console.log(JSON.stringify(this.enemyCreeps[0].creep.body[0]));
         if (captain == null) {
             console.log("ERROR: No captain found");
             return;
@@ -94,12 +86,25 @@ class CtfMain {
         this.defensivePosRanged = pathFromFlags[RANGED_PATH_STEPS_DEFENSE];
         this.defensivePosHealers = pathFromFlags[HEALER_PATH_STEPS_DEFENSE];
     }
-    static runMyCreep(myCreep) {
+    static run() {
+        this.progressStates();
+        const myHurtCreeps = [];
+        for (const myCreep of this.myCreeps) {
+            if (myCreep.creep.hits < myCreep.creep.hitsMax) {
+                myHurtCreeps.push(myCreep);
+            }
+        }
+        for (const myCreep of this.myCreeps) {
+            this.runMyCreep(myCreep, myHurtCreeps);
+        }
+        this.runTower();
+    }
+    static runMyCreep(myCreep, myHurtCreeps) {
         if (myCreep.type === "ranger") {
             this.runRanger(myCreep);
         }
         else if (myCreep.type === "healer") {
-            this.runHealer(myCreep);
+            this.runHealer(myCreep, myHurtCreeps);
         }
         else if (myCreep.type === "tank") {
             this.runTank(myCreep);
@@ -139,6 +144,9 @@ class CtfMain {
         if (this.matchState === "defense") {
             ranger.creep.moveTo(this.defensivePosRanged);
         }
+        else if (this.matchState === "engage") {
+            ranger.creep.moveTo(this.enemyCreeps[0].creep);
+        }
         else {
             ranger.creep.moveTo(this.enemyFlag);
         }
@@ -150,28 +158,33 @@ class CtfMain {
             }
         }
     }
-    static runHealer(healer) {
+    static runHealer(healer, myHurtCreeps) {
         // Movement logic
         if (this.matchState === "defense") {
             healer.creep.moveTo(this.defensivePosHealers);
+        }
+        else if (this.matchState === "engage") {
+            if (myHurtCreeps.length > 0) {
+                healer.creep.moveTo(myHurtCreeps[0].creep);
+            } // Not sure what else to do
         }
         else {
             healer.creep.moveTo(this.enemyFlag);
         }
         // Healing logic
         let healResult = null;
-        for (const possibleCreepToHeal of this.myCreeps) {
-            if (possibleCreepToHeal.creep.hits === possibleCreepToHeal.creep.hitsMax) {
-                // Doesn't need heals
-                continue;
-            }
-            healResult = healer.creep.heal(possibleCreepToHeal.creep);
+        for (const hurtCreep of myHurtCreeps) {
+            healResult = healer.creep.heal(hurtCreep.creep);
             if (healResult === OK) {
                 break;
             }
-            healResult = possibleCreepToHeal.creep.rangedHeal(possibleCreepToHeal.creep);
-            if (healResult === OK) {
-                break;
+        }
+        if (healResult !== OK) {
+            for (const hurtCreep of myHurtCreeps) {
+                healResult = hurtCreep.creep.rangedHeal(hurtCreep.creep);
+                if (healResult === OK) {
+                    break;
+                }
             }
         }
     }
@@ -195,7 +208,7 @@ class CtfMain {
                 this.matchState = "push";
             }
             else {
-                const ENGAGE_WHEN_DISTANCE_UNDER = 10;
+                const ENGAGE_WHEN_DISTANCE_UNDER = 12;
                 for (const enemyCreep of this.enemyCreeps) {
                     if (getRange(this.defensivePosCaptain, enemyCreep.creep) < ENGAGE_WHEN_DISTANCE_UNDER) {
                         console.log("engage");
@@ -203,6 +216,12 @@ class CtfMain {
                         break;
                     }
                 }
+            }
+        }
+        else if (this.matchState === "engage") {
+            if (getTime() > 1700) {
+                console.log("push");
+                this.matchState = "push";
             }
         }
     }
