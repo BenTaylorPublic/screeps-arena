@@ -226,7 +226,7 @@ class CtfMain {
     static progressStates() {
         const PUSH_TIME = 1700;
         if (this.matchState === "defense") {
-            if (getTime() > 300) {
+            if (getTime() > PUSH_TIME) {
                 console.log("push");
                 this.matchState = "push";
             }
