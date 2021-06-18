@@ -199,7 +199,7 @@ export class CtfMain {
         // Movement logic
         if (this.matchState === "defense") {
             healer.creep.moveTo(this.defensivePosHealers);
-        } else if (this.matchState === "engage") {
+        } else if (this.matchState === "engage" || this.matchState === "push") {
             if (myHurtCreeps.length > 0) {
                 healer.creep.moveTo(myHurtCreeps[0].creep);
             } else {
@@ -251,6 +251,7 @@ export class CtfMain {
     }
 
     private static progressStates(): void {
+        const PUSH_TIME: number = 1700;
         if (this.matchState === "defense") {
             if (getTime() > 300) {
                 console.log("push");
@@ -267,9 +268,8 @@ export class CtfMain {
             }
         } else if (this.matchState === "engage") {
             const PUSH_WHEN_ENEMY_HAS_LESS_THAN_X_CREEPS: number = 3;
-            const FORCE_PUSH_AT_TICK: number = 1700;
             if (this.enemyCreeps.length < PUSH_WHEN_ENEMY_HAS_LESS_THAN_X_CREEPS ||
-                getTime() >= FORCE_PUSH_AT_TICK) {
+                getTime() >= PUSH_TIME) {
                 console.log("push");
                 this.matchState = "push";
             }
