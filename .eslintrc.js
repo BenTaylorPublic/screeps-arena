@@ -35,6 +35,8 @@ module.exports = {
     "@typescript-eslint/consistent-type-assertions": "error",
     "@typescript-eslint/consistent-type-definitions": "error",
     "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-inferrable-types": "off",
     "@typescript-eslint/explicit-member-accessibility": [
       "error",
       {
