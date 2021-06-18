@@ -277,12 +277,12 @@ export class CtfMain {
     }
 
     private static clearOutCreeps(): void {
-        for (let i: number = this.enemyCreeps.length; i >= 0; i--) {
+        for (let i: number = this.enemyCreeps.length - 1; i >= 0; i--) {
             if (this.enemyCreeps[i].creep.hits == null) {
                 this.enemyCreeps.splice(i, 1);
             }
         }
-        for (let i: number = this.myCreeps.length; i >= 0; i--) {
+        for (let i: number = this.myCreeps.length - 1; i >= 0; i--) {
             if (this.myCreeps[i].creep.hits == null) {
                 this.myCreeps.splice(i, 1);
             }
