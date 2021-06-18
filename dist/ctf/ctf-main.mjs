@@ -1,6 +1,6 @@
 import { Creep, StructureTower } from '/game/prototypes';
 import { getObjectsByPrototype, findPath, getRange, getTime } from '/game/utils';
-import { HEAL, TOUGH, RANGED_ATTACK, OK } from '/game/constants';
+import { HEAL, RANGED_ATTACK, TOUGH, OK } from '/game/constants';
 import { Flag } from '/arena/prototypes';
 
 class CtfMain {
@@ -26,8 +26,11 @@ class CtfMain {
                 if (creep.body[0].type === HEAL) {
                     myCreep.type = "healer";
                 }
+                else if (creep.body[0].type === RANGED_ATTACK) {
+                    myCreep.type = "ranger";
+                }
                 else if (creep.body[0].type === TOUGH) {
-                    if (!captain) {
+                    if (captain == null) {
                         myCreep.type = "captain";
                         captain = myCreep;
                     }
@@ -35,18 +38,35 @@ class CtfMain {
                         myCreep.type = "tank";
                     }
                 }
-                else if (creep.body[0].type === RANGED_ATTACK) {
-                    myCreep.type = "ranger";
-                }
                 else {
                     console.log(`ERROR: Unknown first body type ${creep.body[0].type}`);
                 }
                 this.myCreeps.push(myCreep);
             }
             else {
-                this.enemyCreeps.push(creep);
+                const enemyCreep = {
+                    creep: creep,
+                    deathPriority: 0
+                };
+                if (creep.body[0].type === HEAL) {
+                    enemyCreep.deathPriority = 3;
+                }
+                else if (creep.body[0].type === RANGED_ATTACK) {
+                    enemyCreep.deathPriority = 2;
+                }
+                else if (creep.body[0].type === TOUGH) {
+                    enemyCreep.deathPriority = 1;
+                }
+                else {
+                    console.log(`ERROR: Unknown first body type ${creep.body[0].type}`);
+                }
+                this.enemyCreeps.push(enemyCreep);
             }
         }
+        this.enemyCreeps.sort((a, b) => {
+            return a.deathPriority - b.deathPriority;
+        });
+        console.log(this.enemyCreeps[0].creep.body[0]);
         if (captain == null) {
             console.log("ERROR: No captain found");
             return;
@@ -73,9 +93,6 @@ class CtfMain {
         this.defensivePosCaptain = pathFromFlags[CAPTAIN_PATH_STEPS_DEFENSE];
         this.defensivePosRanged = pathFromFlags[RANGED_PATH_STEPS_DEFENSE];
         this.defensivePosHealers = pathFromFlags[HEALER_PATH_STEPS_DEFENSE];
-        console.log(JSON.stringify(this.defensivePosCaptain));
-        console.log(JSON.stringify(this.defensivePosHealers));
-        console.log(JSON.stringify(this.defensivePosRanged));
     }
     static runMyCreep(myCreep) {
         if (myCreep.type === "ranger") {
@@ -95,7 +112,7 @@ class CtfMain {
         tank.creep.moveTo(this.myFlag);
         let attackResult = null;
         for (const enemyCreep of this.enemyCreeps) {
-            attackResult = tank.creep.attack(enemyCreep);
+            attackResult = tank.creep.attack(enemyCreep.creep);
             if (attackResult === OK) {
                 break;
             }
@@ -111,7 +128,7 @@ class CtfMain {
         }
         let attackResult = null;
         for (const enemyCreep of this.enemyCreeps) {
-            attackResult = captain.creep.attack(enemyCreep);
+            attackResult = captain.creep.attack(enemyCreep.creep);
             if (attackResult === OK) {
                 break;
             }
@@ -127,7 +144,7 @@ class CtfMain {
         }
         let attackResult = null;
         for (const enemyCreep of this.enemyCreeps) {
-            attackResult = ranger.creep.rangedAttack(enemyCreep);
+            attackResult = ranger.creep.rangedAttack(enemyCreep.creep);
             if (attackResult === OK) {
                 break;
             }
@@ -164,18 +181,29 @@ class CtfMain {
         }
         const FIRE_WHEN_CREEP_CLOSER_THAN = 5;
         for (const enemyCreep of this.enemyCreeps) {
-            const distance = getRange(this.myTower, enemyCreep);
+            const distance = getRange(this.myTower, enemyCreep.creep);
             if (distance < FIRE_WHEN_CREEP_CLOSER_THAN) {
-                this.myTower.attack(enemyCreep);
+                this.myTower.attack(enemyCreep.creep);
                 break;
             }
         }
     }
     static progressStates() {
-        if (this.matchState === "defense" &&
-            getTime() > 300) {
-            console.log("push");
-            this.matchState = "push";
+        if (this.matchState === "defense") {
+            if (getTime() > 300) {
+                console.log("push");
+                this.matchState = "push";
+            }
+            else {
+                const ENGAGE_WHEN_DISTANCE_UNDER = 10;
+                for (const enemyCreep of this.enemyCreeps) {
+                    if (getRange(this.defensivePosCaptain, enemyCreep.creep) < ENGAGE_WHEN_DISTANCE_UNDER) {
+                        console.log("engage");
+                        this.matchState = "engage";
+                        break;
+                    }
+                }
+            }
         }
     }
 }

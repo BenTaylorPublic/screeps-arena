@@ -5,3 +5,8 @@ export interface CtfMyCreep {
     creep: Creep;
     type: CtfCreepType;
 }
+
+export interface CtfEnemyCreep {
+    creep: Creep;
+    deathPriority: number;
+}

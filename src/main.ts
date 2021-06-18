@@ -8,7 +8,8 @@ export function loop(): void {
         if (firstTick) {
             CtfMain.initialize();
             firstTick = false;
+        } else {
+            CtfMain.run();
         }
-        CtfMain.run();
     }
 }

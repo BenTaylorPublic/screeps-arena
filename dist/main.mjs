@@ -8,7 +8,9 @@ function loop() {
             CtfMain.initialize();
             firstTick = false;
         }
-        CtfMain.run();
+        else {
+            CtfMain.run();
+        }
     }
 }
 
