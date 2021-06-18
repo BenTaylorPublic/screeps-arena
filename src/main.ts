@@ -1,3 +1,3 @@
-export let loop: any = function (): void {
-    console.log("Hello world");
+export function loop(): void {
+  console.log("Hello world");
 }
