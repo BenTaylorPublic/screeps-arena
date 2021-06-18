@@ -1,0 +1,1 @@
+export type CtfCreepType = "tank" | "healer" | "ranger";

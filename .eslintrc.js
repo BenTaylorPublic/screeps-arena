@@ -82,7 +82,7 @@ module.exports = {
     "no-undef-init": "error",
     "no-underscore-dangle": "warn",
     "no-var": "error",
-    "object-shorthand": "error",
+    "object-shorthand": "off",
     "one-var": ["error", "never"],
     "quote-props": "off",
     radix: "error",
