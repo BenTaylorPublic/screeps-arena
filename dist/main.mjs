@@ -1,11 +1,13 @@
 import { arenaInfo } from '/game';
 import { CtfMain } from './ctf/ctf-main.mjs';
 
-if (arenaInfo.name === "Capture the Flag") {
-    CtfMain.initialize();
-}
+let firstTick = true;
 function loop() {
     if (arenaInfo.name === "Capture the Flag") {
+        if (firstTick) {
+            CtfMain.initialize();
+            firstTick = false;
+        }
         CtfMain.run();
     }
 }
