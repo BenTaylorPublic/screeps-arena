@@ -262,10 +262,14 @@ export class CtfMain {
                 console.log("push");
                 this.matchState = "push";
                 if (this.enemyCreeps[0].creep == null) {
-                    console.log("IS NULL")
+                    console.log("creep is null")
                 } else {
                     console.log("Hits: ");
+                    if (this.enemyCreeps[0].creep.hits == null) {
+                        console.log("hits are null")
+                    }
                     console.log(this.enemyCreeps[0].creep.hits);
+                    console.log("???");
                 }
             }
         }
