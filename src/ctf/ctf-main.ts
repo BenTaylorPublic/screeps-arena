@@ -102,6 +102,8 @@ export class CtfMain {
     }
 
     public static run(): void {
+        this.clearOutCreeps();
+
         this.progressStates();
 
         const myHurtCreeps: CtfMyCreep[] = [];
@@ -200,9 +202,15 @@ export class CtfMain {
         } else if (this.matchState === "engage") {
             if (myHurtCreeps.length > 0) {
                 healer.creep.moveTo(myHurtCreeps[0].creep);
-            } // Not sure what else to do
-        } else {
-            healer.creep.moveTo(this.enemyFlag);
+            } else {
+                // Move to first non healer/tank
+                for (const myCreep of this.myCreeps) {
+                    if (myCreep.type !== "healer" && myCreep.type !== "tank") {
+                        healer.creep.moveTo(myCreep.creep);
+                        break;
+                    }
+                }
+            }
         }
 
         // Healing logic
@@ -258,19 +266,25 @@ export class CtfMain {
                 }
             }
         } else if (this.matchState === "engage") {
-            if (getTime() > 1700) {
+            const PUSH_WHEN_ENEMY_HAS_LESS_THAN_X_CREEPS: number = 3;
+            const FORCE_PUSH_AT_TICK: number = 1700;
+            if (this.enemyCreeps.length < PUSH_WHEN_ENEMY_HAS_LESS_THAN_X_CREEPS ||
+                getTime() >= FORCE_PUSH_AT_TICK) {
                 console.log("push");
                 this.matchState = "push";
-                if (this.enemyCreeps[0].creep == null) {
-                    console.log("creep is null")
-                } else {
-                    console.log("Hits: ");
-                    if (this.enemyCreeps[0].creep.hits == null) {
-                        console.log("hits are null")
-                    }
-                    console.log(this.enemyCreeps[0].creep.hits);
-                    console.log("???");
-                }
+            }
+        }
+    }
+
+    private static clearOutCreeps(): void {
+        for (let i: number = this.enemyCreeps.length; i >= 0; i--) {
+            if (this.enemyCreeps[i].creep.hits == null) {
+                this.enemyCreeps.splice(i, 1);
+            }
+        }
+        for (let i: number = this.myCreeps.length; i >= 0; i--) {
+            if (this.myCreeps[i].creep.hits == null) {
+                this.myCreeps.splice(i, 1);
             }
         }
     }
