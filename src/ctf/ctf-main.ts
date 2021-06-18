@@ -264,6 +264,7 @@ export class CtfMain {
                 if (this.enemyCreeps[0].creep == null) {
                     console.log("IS NULL")
                 } else {
+                    console.log("Hits: ");
                     console.log(this.enemyCreeps[0].creep.hits);
                 }
             }

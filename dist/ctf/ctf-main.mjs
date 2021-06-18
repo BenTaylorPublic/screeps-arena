@@ -241,6 +241,7 @@ class CtfMain {
                     console.log("IS NULL");
                 }
                 else {
+                    console.log("Hits: ");
                     console.log(this.enemyCreeps[0].creep.hits);
                 }
             }
