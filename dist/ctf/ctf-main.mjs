@@ -55,8 +55,8 @@ class CtfMain {
                 this.enemyFlag = flag;
             }
         }
-        const RANGED_PATH_STEPS_DEFENSE = 10;
-        const HEALER_PATH_STEPS_DEFENSE = 8;
+        const RANGED_PATH_STEPS_DEFENSE = 8;
+        const HEALER_PATH_STEPS_DEFENSE = 6;
         const pathFromFlags = findPath(this.myFlag, this.enemyFlag);
         this.defensivePosHealers = pathFromFlags[HEALER_PATH_STEPS_DEFENSE];
         this.defensivePosRanged = pathFromFlags[RANGED_PATH_STEPS_DEFENSE];
@@ -85,7 +85,13 @@ class CtfMain {
         }
     }
     static runRanger(ranger) {
-        ranger.creep.moveTo(this.enemyFlag);
+        // Movement logic
+        if (this.matchState === "defense") {
+            ranger.creep.moveTo(this.defensivePosRanged);
+        }
+        else {
+            ranger.creep.moveTo(this.enemyFlag);
+        }
         let attackResult = null;
         for (const enemyCreep of this.enemyCreeps) {
             attackResult = ranger.creep.rangedAttack(enemyCreep);
@@ -95,7 +101,14 @@ class CtfMain {
         }
     }
     static runHealer(healer) {
-        healer.creep.moveTo(this.enemyFlag);
+        // Movement logic
+        if (this.matchState === "defense") {
+            healer.creep.moveTo(this.defensivePosHealers);
+        }
+        else {
+            healer.creep.moveTo(this.enemyFlag);
+        }
+        // Healing logic
         let healResult = null;
         for (const possibleCreepToHeal of this.myCreeps) {
             if (possibleCreepToHeal.creep.hits === possibleCreepToHeal.creep.hitsMax) {
@@ -127,9 +140,9 @@ class CtfMain {
     }
     static progressStates() {
         if (this.matchState === "defense" &&
-            getTime() > 100) {
-            console.log("progress");
-            this.matchState = "progress";
+            getTime() > 300) {
+            console.log("push");
+            this.matchState = "push";
         }
     }
 }
