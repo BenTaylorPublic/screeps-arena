@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint \"src/**/*.ts\"",
-    "build": "rollup -c --config-"
+    "start": "rollup -c --config-"
   },
   "repository": {
     "type": "git",
