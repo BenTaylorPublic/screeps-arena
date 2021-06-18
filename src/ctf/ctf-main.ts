@@ -1,10 +1,17 @@
-import {Creep, StructureTower} from "game/prototypes";
-import {getObjectsByPrototype, getRange} from "game/utils";
+import {Creep, RoomPosition, StructureTower} from "game/prototypes";
+import {findPath, getObjectsByPrototype, getRange, getTime} from "game/utils";
 import {CreepActionReturnCode, HEAL, OK, RANGED_ATTACK, TOUGH} from "game/constants";
 import {Flag} from "arena/prototypes";
 import {CtfMyCreep} from "./ctf-interfaces";
+import {CtfMatchState} from "./ctf-types";
+import {PathStep} from "game/path-finder";
 
 export class CtfMain {
+    private static matchState: CtfMatchState;
+
+    private static defensivePosRanged: RoomPosition;
+    private static defensivePosHealers: RoomPosition;
+
     private static myCreeps: CtfMyCreep[];
     private static myTower: StructureTower;
     private static myFlag: Flag;
@@ -13,7 +20,8 @@ export class CtfMain {
     private static enemyFlag: Flag;
 
     public static run(): void {
-        // Running my creeps
+        this.progressStates();
+
         for (const myCreep of this.myCreeps) {
             this.runMyCreep(myCreep);
         }
@@ -24,6 +32,7 @@ export class CtfMain {
     public static initialize(): void {
         this.myCreeps = [];
         this.enemyCreeps = [];
+        this.matchState = "defense";
 
         const creeps: Creep[] = getObjectsByPrototype(Creep);
         for (const creep of creeps) {
@@ -61,6 +70,17 @@ export class CtfMain {
                 this.enemyFlag = flag;
             }
         }
+
+        const RANGED_PATH_STEPS_DEFENSE: number = 10;
+        const HEALER_PATH_STEPS_DEFENSE: number = 8;
+
+        const pathFromFlags: PathStep[] = findPath(this.myFlag, this.enemyFlag);
+        this.defensivePosHealers = pathFromFlags[HEALER_PATH_STEPS_DEFENSE];
+        this.defensivePosRanged = pathFromFlags[RANGED_PATH_STEPS_DEFENSE];
+
+        console.log(JSON.stringify(this.defensivePosHealers));
+        console.log(JSON.stringify(this.defensivePosRanged));
+
     }
 
     private static runMyCreep(myCreep: CtfMyCreep): void {
@@ -75,6 +95,14 @@ export class CtfMain {
 
     private static runTank(tank: CtfMyCreep): void {
         tank.creep.moveTo(this.myFlag);
+        let attackResult: CreepActionReturnCode | null = null;
+        for (const enemyCreep of this.enemyCreeps) {
+            attackResult = tank.creep.attack(enemyCreep);
+
+            if (attackResult === OK) {
+                break;
+            }
+        }
     }
 
     private static runRanger(ranger: CtfMyCreep): void {
@@ -124,6 +152,14 @@ export class CtfMain {
                 this.myTower.attack(enemyCreep);
                 break;
             }
+        }
+    }
+
+    private static progressStates(): void {
+        if (this.matchState === "defense" &&
+            getTime() > 100) {
+            console.log("progress");
+            this.matchState = "progress";
         }
     }
 }

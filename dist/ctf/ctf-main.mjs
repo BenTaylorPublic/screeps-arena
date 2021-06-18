@@ -1,11 +1,11 @@
 import { Creep, StructureTower } from '/game/prototypes';
-import { getObjectsByPrototype, getRange } from '/game/utils';
+import { getObjectsByPrototype, findPath, getRange, getTime } from '/game/utils';
 import { HEAL, TOUGH, RANGED_ATTACK, OK } from '/game/constants';
 import { Flag } from '/arena/prototypes';
 
 class CtfMain {
     static run() {
-        // Running my creeps
+        this.progressStates();
         for (const myCreep of this.myCreeps) {
             this.runMyCreep(myCreep);
         }
@@ -14,6 +14,7 @@ class CtfMain {
     static initialize() {
         this.myCreeps = [];
         this.enemyCreeps = [];
+        this.matchState = "defense";
         const creeps = getObjectsByPrototype(Creep);
         for (const creep of creeps) {
             if (creep.my) {
@@ -54,6 +55,13 @@ class CtfMain {
                 this.enemyFlag = flag;
             }
         }
+        const RANGED_PATH_STEPS_DEFENSE = 10;
+        const HEALER_PATH_STEPS_DEFENSE = 8;
+        const pathFromFlags = findPath(this.myFlag, this.enemyFlag);
+        this.defensivePosHealers = pathFromFlags[HEALER_PATH_STEPS_DEFENSE];
+        this.defensivePosRanged = pathFromFlags[RANGED_PATH_STEPS_DEFENSE];
+        console.log(JSON.stringify(this.defensivePosHealers));
+        console.log(JSON.stringify(this.defensivePosRanged));
     }
     static runMyCreep(myCreep) {
         if (myCreep.type === "tank") {
@@ -68,6 +76,13 @@ class CtfMain {
     }
     static runTank(tank) {
         tank.creep.moveTo(this.myFlag);
+        let attackResult = null;
+        for (const enemyCreep of this.enemyCreeps) {
+            attackResult = tank.creep.attack(enemyCreep);
+            if (attackResult === OK) {
+                break;
+            }
+        }
     }
     static runRanger(ranger) {
         ranger.creep.moveTo(this.enemyFlag);
@@ -108,6 +123,13 @@ class CtfMain {
                 this.myTower.attack(enemyCreep);
                 break;
             }
+        }
+    }
+    static progressStates() {
+        if (this.matchState === "defense" &&
+            getTime() > 100) {
+            console.log("progress");
+            this.matchState = "progress";
         }
     }
 }
