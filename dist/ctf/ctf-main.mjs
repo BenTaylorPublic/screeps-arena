@@ -128,6 +128,15 @@ class CtfMain {
         if (this.matchState === "defense") {
             captain.creep.moveTo(this.defensivePosCaptain);
         }
+        else if (this.matchState === "engage") {
+            const DONT_MOVE_TO_ENEMY_OVER = 10;
+            for (const enemyCreep of this.enemyCreeps) {
+                if (getRange(captain.creep, enemyCreep.creep) <= DONT_MOVE_TO_ENEMY_OVER) {
+                    captain.creep.moveTo(enemyCreep.creep);
+                    break;
+                }
+            }
+        }
         else {
             captain.creep.moveTo(this.enemyFlag);
         }
@@ -145,7 +154,13 @@ class CtfMain {
             ranger.creep.moveTo(this.defensivePosRanged);
         }
         else if (this.matchState === "engage") {
-            ranger.creep.moveTo(this.enemyCreeps[0].creep);
+            const DONT_MOVE_TO_ENEMY_OVER = 10;
+            for (const enemyCreep of this.enemyCreeps) {
+                if (getRange(ranger.creep, enemyCreep.creep) <= DONT_MOVE_TO_ENEMY_OVER) {
+                    ranger.creep.moveTo(enemyCreep.creep);
+                    break;
+                }
+            }
         }
         else {
             ranger.creep.moveTo(this.enemyFlag);
