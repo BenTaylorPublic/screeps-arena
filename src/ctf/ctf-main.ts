@@ -116,7 +116,7 @@ export class CtfMain {
             return;
         }
 
-        const FIRE_WHEN_CREEP_CLOSER_THAN: number = 10;
+        const FIRE_WHEN_CREEP_CLOSER_THAN: number = 5;
 
         for (const enemyCreep of this.enemyCreeps) {
             const distance: number = getRange(this.myTower, enemyCreep);

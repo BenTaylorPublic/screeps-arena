@@ -101,7 +101,7 @@ class CtfMain {
         if (this.myTower.cooldown > 0) {
             return;
         }
-        const FIRE_WHEN_CREEP_CLOSER_THAN = 10;
+        const FIRE_WHEN_CREEP_CLOSER_THAN = 5;
         for (const enemyCreep of this.enemyCreeps) {
             const distance = getRange(this.myTower, enemyCreep);
             if (distance < FIRE_WHEN_CREEP_CLOSER_THAN) {
