@@ -66,7 +66,7 @@ class CtfMain {
         this.enemyCreeps.sort((a, b) => {
             return a.deathPriority - b.deathPriority;
         });
-        console.log(this.enemyCreeps[0].creep.body[0]);
+        console.log(JSON.stringify(this.enemyCreeps[0].creep.body[0]));
         if (captain == null) {
             console.log("ERROR: No captain found");
             return;
