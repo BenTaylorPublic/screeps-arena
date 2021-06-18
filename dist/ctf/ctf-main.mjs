@@ -237,7 +237,12 @@ class CtfMain {
             if (getTime() > 1700) {
                 console.log("push");
                 this.matchState = "push";
-                console.log(this.enemyCreeps[0].creep.hits);
+                if (this.enemyCreeps[0].creep == null) {
+                    console.log("IS NULL");
+                }
+                else {
+                    console.log(this.enemyCreeps[0].creep.hits);
+                }
             }
         }
     }
