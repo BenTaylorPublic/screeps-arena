@@ -5,11 +5,13 @@ import { Flag } from '/arena/prototypes';
 
 class CtfMain {
     static initialize() {
-        this.myCreeps = [];
+        this.rangers = [];
+        this.healers = [];
+        this.captain = null;
+        this.tank = null;
         this.enemyCreeps = [];
         this.matchState = "defense";
         const creeps = getObjectsByPrototype(Creep);
-        let captain = null;
         for (const creep of creeps) {
             if (creep.my) {
                 const myCreep = {
@@ -18,23 +20,25 @@ class CtfMain {
                 };
                 if (creep.body[0].type === HEAL) {
                     myCreep.type = "healer";
+                    this.healers.push(myCreep);
                 }
                 else if (creep.body[0].type === RANGED_ATTACK) {
                     myCreep.type = "ranger";
+                    this.rangers.push(myCreep);
                 }
                 else if (creep.body[0].type === TOUGH) {
-                    if (captain == null) {
+                    if (this.captain == null) {
                         myCreep.type = "captain";
-                        captain = myCreep;
+                        this.captain = myCreep;
                     }
                     else {
                         myCreep.type = "tank";
+                        this.tank = myCreep;
                     }
                 }
                 else {
                     console.log(`ERROR: Unknown first body type ${creep.body[0].type}`);
                 }
-                this.myCreeps.push(myCreep);
             }
             else {
                 const enemyCreep = {
@@ -59,7 +63,7 @@ class CtfMain {
         this.enemyCreeps.sort((a, b) => {
             return b.deathPriority - a.deathPriority;
         });
-        if (captain == null) {
+        if (this.captain == null) {
             console.log("ERROR: No captain found");
             return;
         }
@@ -81,7 +85,7 @@ class CtfMain {
         const CAPTAIN_PATH_STEPS_DEFENSE = 2;
         const RANGED_PATH_STEPS_DEFENSE = 1;
         const HEALER_PATH_STEPS_DEFENSE = 0;
-        const pathFromFlags = findPath(captain.creep, this.enemyFlag);
+        const pathFromFlags = findPath(this.captain.creep, this.enemyFlag);
         this.defensivePosCaptain = pathFromFlags[CAPTAIN_PATH_STEPS_DEFENSE];
         this.defensivePosRanged = pathFromFlags[RANGED_PATH_STEPS_DEFENSE];
         this.defensivePosHealers = pathFromFlags[HEALER_PATH_STEPS_DEFENSE];
@@ -89,30 +93,40 @@ class CtfMain {
     static run() {
         this.clearOutCreeps();
         this.progressStates();
+        // Calculating hurt creeps
         const myHurtCreeps = [];
-        for (const myCreep of this.myCreeps) {
-            if (myCreep.creep.hits < myCreep.creep.hitsMax) {
-                myHurtCreeps.push(myCreep);
+        for (const healer of this.healers) {
+            if (healer.creep.hits < healer.creep.hitsMax) {
+                myHurtCreeps.push(healer);
             }
         }
-        for (const myCreep of this.myCreeps) {
-            this.runMyCreep(myCreep, myHurtCreeps);
+        for (const ranger of this.rangers) {
+            if (ranger.creep.hits < ranger.creep.hitsMax) {
+                myHurtCreeps.push(ranger);
+            }
+        }
+        if (this.captain != null &&
+            this.captain.creep.hits < this.captain.creep.hitsMax) {
+            myHurtCreeps.push(this.captain);
+        }
+        if (this.tank != null &&
+            this.tank.creep.hits < this.tank.creep.hitsMax) {
+            myHurtCreeps.push(this.tank);
+        }
+        // Running creeps
+        for (const ranger of this.rangers) {
+            this.runRanger(ranger);
+        }
+        for (const healer of this.healers) {
+            this.runHealer(healer, myHurtCreeps);
+        }
+        if (this.captain != null) {
+            this.runCaptain(this.captain);
+        }
+        if (this.tank != null) {
+            this.runTank(this.tank);
         }
         this.runTower();
-    }
-    static runMyCreep(myCreep, myHurtCreeps) {
-        if (myCreep.type === "ranger") {
-            this.runRanger(myCreep);
-        }
-        else if (myCreep.type === "healer") {
-            this.runHealer(myCreep, myHurtCreeps);
-        }
-        else if (myCreep.type === "tank") {
-            this.runTank(myCreep);
-        }
-        else if (myCreep.type === "captain") {
-            this.runCaptain(myCreep);
-        }
     }
     static runTank(tank) {
         tank.creep.moveTo(this.myFlag);
@@ -185,11 +199,11 @@ class CtfMain {
             }
             else {
                 // Move to first non healer/tank
-                for (const myCreep of this.myCreeps) {
-                    if (myCreep.type !== "healer" && myCreep.type !== "tank") {
-                        healer.creep.moveTo(myCreep.creep);
-                        break;
-                    }
+                if (this.rangers.length > 0) {
+                    healer.creep.moveTo(this.rangers[0].creep);
+                }
+                else if (this.captain != null) {
+                    healer.creep.moveTo(this.captain.creep);
                 }
             }
         }
@@ -256,10 +270,23 @@ class CtfMain {
                 this.enemyCreeps.splice(i, 1);
             }
         }
-        for (let i = this.myCreeps.length - 1; i >= 0; i--) {
-            if (this.myCreeps[i].creep.hits == null) {
-                this.myCreeps.splice(i, 1);
+        for (let i = this.rangers.length - 1; i >= 0; i--) {
+            if (this.rangers[i].creep.hits == null) {
+                this.rangers.splice(i, 1);
             }
+        }
+        for (let i = this.healers.length - 1; i >= 0; i--) {
+            if (this.healers[i].creep.hits == null) {
+                this.healers.splice(i, 1);
+            }
+        }
+        if (this.captain != null &&
+            this.captain.creep.hits == null) {
+            this.captain = null;
+        }
+        if (this.tank != null &&
+            this.tank.creep.hits == null) {
+            this.tank = null;
         }
     }
 }
