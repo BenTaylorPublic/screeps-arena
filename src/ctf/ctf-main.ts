@@ -1,6 +1,6 @@
-import {Creep, RoomPosition, StructureTower} from "game/prototypes";
+import {Creep, Id, RoomPosition, StructureTower} from "game/prototypes";
 import {findPath, getObjectsByPrototype, getRange, getTime} from "game/utils";
-import {CreepActionReturnCode, HEAL, OK, RANGED_ATTACK, TOUGH} from "game/constants";
+import {CreepActionReturnCode, HEAL, OK, RANGED_ATTACK, TOUGH, TOWER_CAPACITY, TOWER_RANGE} from "game/constants";
 import {Flag} from "arena/prototypes";
 import {CtfEnemyCreep, CtfMyCreep} from "./ctf-interfaces";
 import {CtfMatchState} from "./ctf-types";
@@ -260,12 +260,30 @@ export class CtfMain {
         }
 
         const FIRE_WHEN_CREEP_CLOSER_THAN: number = 5;
-
+        let closestDistance: number = 999;
+        let closestCreepId: Id<Creep> | null = null;
         for (const enemyCreep of this.enemyCreeps) {
             const distance: number = getRange(this.myTower, enemyCreep.creep);
             if (distance < FIRE_WHEN_CREEP_CLOSER_THAN) {
                 this.myTower.attack(enemyCreep.creep);
-                break;
+                return;
+            } else if (distance < closestDistance) {
+                closestDistance = distance;
+                closestCreepId = enemyCreep.creep.id;
+            }
+        }
+
+        // Still haven't fired
+        const RESTORE_TIME: number = 10;
+        if (closestCreepId != null &&
+            closestDistance < TOWER_RANGE &&
+            closestDistance >= FIRE_WHEN_CREEP_CLOSER_THAN + RESTORE_TIME &&
+            this.myTower.store.energy === TOWER_CAPACITY) {
+            for (const enemyCreep of this.enemyCreeps) {
+                if (enemyCreep.creep.id === closestCreepId) {
+                    this.myTower.attack(enemyCreep.creep);
+                    break;
+                }
             }
         }
     }
