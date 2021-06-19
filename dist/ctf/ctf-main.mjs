@@ -46,10 +46,10 @@ class CtfMain {
                     deathPriority: 0
                 };
                 if (creep.body[0].type === HEAL) {
-                    enemyCreep.deathPriority = 3;
+                    enemyCreep.deathPriority = 2;
                 }
                 else if (creep.body[0].type === RANGED_ATTACK) {
-                    enemyCreep.deathPriority = 2;
+                    enemyCreep.deathPriority = 3;
                 }
                 else if (creep.body[0].type === TOUGH) {
                     enemyCreep.deathPriority = 1;
