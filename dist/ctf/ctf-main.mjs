@@ -243,10 +243,8 @@ class CtfMain {
             }
         }
         // Still haven't fired
-        const RESTORE_TIME = 10;
         if (closestCreepId != null &&
             closestDistance < TOWER_RANGE &&
-            closestDistance >= FIRE_WHEN_CREEP_CLOSER_THAN + RESTORE_TIME &&
             this.myTower.store.energy === TOWER_CAPACITY) {
             for (const enemyCreep of this.enemyCreeps) {
                 if (enemyCreep.creep.id === closestCreepId) {
