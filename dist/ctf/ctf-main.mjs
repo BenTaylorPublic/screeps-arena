@@ -209,6 +209,10 @@ class CtfMain {
                 else if (this.captain != null) {
                     healer.creep.moveTo(this.captain.creep);
                 }
+                else {
+                    // Nobody alive, move to flag
+                    healer.creep.moveTo(this.enemyFlag);
+                }
             }
         }
         // Healing logic

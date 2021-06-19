@@ -236,6 +236,9 @@ export class CtfMain {
                     healer.creep.moveTo(this.rangers[0].creep);
                 } else if (this.captain != null) {
                     healer.creep.moveTo(this.captain.creep);
+                } else {
+                    // Nobody alive, move to flag
+                    healer.creep.moveTo(this.enemyFlag);
                 }
             }
         }
