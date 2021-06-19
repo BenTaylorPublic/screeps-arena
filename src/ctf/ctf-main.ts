@@ -196,9 +196,16 @@ export class CtfMain {
             ranger.creep.moveTo(this.defensivePosRanged);
         } else if (this.matchState === "engage") {
             const DONT_MOVE_TO_ENEMY_OVER: number = 10;
+            const OPTIMAL_RANGE: number = 3;
             for (const enemyCreep of this.enemyCreeps) {
-                if (getRange(ranger.creep, enemyCreep.creep) <= DONT_MOVE_TO_ENEMY_OVER) {
-                    ranger.creep.moveTo(enemyCreep.creep);
+                const distance: number = getRange(ranger.creep, enemyCreep.creep);
+                if (distance <= DONT_MOVE_TO_ENEMY_OVER) {
+                    if (distance > OPTIMAL_RANGE) {
+                        ranger.creep.moveTo(enemyCreep.creep);
+                    } else if (distance < OPTIMAL_RANGE) {
+                        // TODO: Need to move away
+                    }
+
                     break;
                 }
             }
