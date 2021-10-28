@@ -1,5 +1,3 @@
-# Screeps Arena
+![](https://screeps.com/images/logotype-animated.svg)
 
-<p align="center">
-    <a href="https://david-dm.org/bentaylorpublic/screeps-arena"><img src="https://david-dm.org/bentaylorpublic/screeps-arena.svg" alt="Dependencies"></a>
-</p>
+# My Screeps Arena AI
